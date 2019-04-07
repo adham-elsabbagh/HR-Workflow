@@ -5,6 +5,16 @@ from odoo.exceptions import except_orm, Warning, RedirectWarning, UserError, Val
 import odoo.addons.decimal_precision as dp
 
 
+READONLY_STATES = {
+    'approve': [('readonly', True)],
+    'refuse': [('readonly', True)],
+    'confirm': [('readonly', True)],
+    'process': [('readonly', True)],
+    'done': [('readonly', True)],
+    'request': [('readonly', True)],
+}
+
+
 class hr_exit_reenter(models.Model):
     _name = 'hr.exit'
 
@@ -24,20 +34,19 @@ class hr_exit_reenter(models.Model):
             self.current_user = True
 
     employee_id = fields.Many2one('hr.employee', string='Employee', required=True, readonly=False,
-                                  states={'approve': [('readonly', True)], 'refuse': [('readonly', True)],'confirm': [('readonly', True)],'process': [('readonly', True)], 'done': [('readonly', True)],},
-                                  default=_get_employee)
+                                  states=READONLY_STATES,default=_get_employee)
     exit_date_from = fields.Date(string='Exit Date From', required=True,readonly=False, copy=False,
-                                 states={'approve': [('readonly', True)], 'refuse': [('readonly', True)],'confirm': [('readonly', True)],'process': [('readonly', True)],'done': [('readonly', True)], } )
+                                 states=READONLY_STATES, )
     exit_date_to = fields.Date(string='Exit Date To', required=False, readonly=False,copy=False,
-                               states={'approve': [('readonly', True)], 'refuse': [('readonly', True)],'confirm': [('readonly', True)],'process': [('readonly', True)], 'done': [('readonly', True)],},)
+                               states=READONLY_STATES, )
     iqama_renewal_date = fields.Date(string='Iqama renew date', required=False, readonly=False,copy=False,
-                                     states={'approve': [('readonly', True)], 'refuse': [('readonly', True)], 'confirm': [('readonly', True)],'process': [('readonly', True)],'done': [('readonly', True)],})
+                                     states=READONLY_STATES, )
     duration = fields.Integer(string="Duration", required=False,
-                              states={'approve': [('readonly', True)], 'refuse': [('readonly', True)],'confirm': [('readonly', True)], 'process': [('readonly', True)],'done': [('readonly', True)],} )
+                              states=READONLY_STATES, )
     type = fields.Selection(string="", selection=[('single', 'Single'), ('multi', 'Multi'), ], required=True,
-                            states={'approve': [('readonly', True)], 'refuse': [('readonly', True)],'confirm': [('readonly', True)], 'process': [('readonly', True)],'done': [('readonly', True)],} )
+                            states=READONLY_STATES, )
     notes = fields.Text(string="Notes", required=False,
-                        states={'approve': [('readonly', True)], 'refuse': [('readonly', True)],'confirm': [('readonly', True)],'process': [('readonly', True)],'done': [('readonly', True)], } )
+                        states=READONLY_STATES, )
     confirmed_date = fields.Datetime(string='Confirmed Date', readonly=True, )
     approved_date = fields.Datetime(string='Approved Date', readonly=True, )
     refused_date = fields.Datetime(string='Refused Date', readonly=True, )
