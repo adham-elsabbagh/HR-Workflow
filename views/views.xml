@@ -1,0 +1,185 @@
+<odoo>
+  <data>
+      <record id="exit_form" model="ir.ui.view">
+          <field name="name">exit.employee.form</field>
+          <field name="model">hr.exit</field>
+          <field name="arch" type="xml">
+              <form string="Exit Request">
+
+                    <header>
+                        <button string="Send Request" name="action_request" type="object" states="draft"/>
+                        <button string="Confirm" name="action_confirm" type="object" class="oe_highlight" icon="gtk-yes"
+                                attrs="{'invisible':['|',('current_user', '=', False),('state','!=','request')]}"/>
+                        <button string="Approve" name="action_approve" type="object" states="confirm"
+                                groups="hr.group_hr_manager"/>
+                        <button string="Done" name="action_done" groups="hr_exit_reenter.exit_entry_group" type="object" states="process" class="oe_highlight" icon="gtk-yes"/>
+                        <button string="Refuse" name="action_refuse" type="object" states="request,confirm,process"/>
+                        <button string="Processing" name="action_process" groups="hr_exit_reenter.exit_entry_group" type="object" states="approve"/>
+
+
+                        <field name="state" widget="statusbar" statusbar_visible="draft,"
+                               statusbar_colors='{"confirm":"blue","draft":"red"}'/>
+                    </header>
+                    <sheet>
+                        <div class="oe_title">
+                            <h1>
+                                <field name="name" readonly="1"/>
+                            </h1>
+                        </div>
+                        <group>
+                            <group>
+                                <field name="employee_id"/>
+                                <field name="exit_date_from"/>
+                                <field name="exit_date_to"/>
+                                <field name="duration"/>
+                            </group>
+                            <group>
+                                <field name="type" widget="radio"/>
+                                <field name="iqama_renewal_date"/>
+                            </group>
+                            <group>
+                                  <field name="reason" groups="hr.group_hr_manager" attrs="{'invisible':[('state', '=', 'draft')]}"/>
+                                  <field name="notes"/>
+                                  <field name="current_user" invisible='1'/>
+                            </group>
+                        </group>
+                    </sheet>
+              </form>
+          </field>
+      </record>
+
+      <record id="view_hr_exit_tree" model="ir.ui.view">
+            <field name="name">hr.exit.tree</field>
+            <field name="model">hr.exit</field>
+            <field name="type">tree</field>
+            <field name="arch" type="xml">
+                <tree string="Exit Request"
+                      colors="black:state=='draft';blue:state=='request';green:state=='confirm';red:state=='refuse'">
+                    <field name="name"/>
+                    <field name="employee_id"/>
+                    <field name="exit_date_from"/>
+                    <field name="exit_date_to"/>
+                    <field name="duration"/>
+                    <field name="state"/>
+                </tree>
+            </field>
+      </record>
+
+      <record id="view_hr_exit_calendar" model="ir.ui.view">
+          <field name="name">hr.exit.calendar</field>
+          <field name="model">hr.exit</field>
+          <field name="arch" type="xml">
+              <calendar string="Leave Request" color="employee_id" date_start="exit_date_from" date_stop="exit_date_to">
+                  <field name="name"/>
+                  <field name="employee_id"/>
+                  <field name="state" invisible="1"/>
+              </calendar>
+          </field>
+      </record>
+
+      <record id="view_hr_exit_filter" model="ir.ui.view">
+            <field name="name">hr.exit.filter</field>
+            <field name="model">hr.exit</field>
+            <field name="arch" type="xml">
+                <search string="Search Exit">
+                    <field name="name"/>
+                    <separator/>
+                    <filter icon="terp-check" domain="[('state','=','draft')]" string="To Request" name="draft"/>
+                    <filter icon="terp-camera_test" domain="[('state','=','request')]" string="To Confirm"
+                            name="request"/>
+                    <filter icon="terp-camera_test" domain="[('state','=','confirm')]" string="To Approve"
+                            name="confirm"/>
+                    <filter icon="terp-camera_test" domain="[('state','in',('approve','process'))]" string="To Process"
+                            name="process"/>
+
+                    <separator/>
+                    <filter string="My Exit Reenter" icon="terp-personal" name="my_exit"
+                            domain="[('employee_id.user_id','=', uid)]" help="My Exit"/>
+                    <separator/>
+                    <group expand="0" string="Group By...">
+                        <filter name="group_name" string="Description" domain="[]" context="{'group_by':'name'}"/>
+                        <filter name="group_date_from" string="Date From" icon="terp-personal" domain="[]"
+                                context="{'group_by':'exit_date_from'}"/>
+                        <filter name="group_date_to" string="Date To" icon="terp-personal" domain="[]"
+                                context="{'group_by':'exit_date_to'}"/>
+                        <filter name="group_employee" string="Employee" icon="terp-personal" domain="[]"
+                                context="{'group_by':'employee_id'}"/>
+                        <filter string="Status" icon="terp-stock_effects-object-colorize" domain="[]"
+                                context="{'group_by':'state'}"/>
+                    </group>
+                </search>
+            </field>
+      </record>
+
+
+
+      <record id="seq_exit" model="ir.sequence">
+        <field name="name">sequence</field>
+        <field name="code">hr.exit</field>
+        <field name="prefix">ER</field>
+        <field name="padding">4</field>
+        <field eval="1" name="number_increment"/>
+      </record>
+
+      <record model="ir.actions.act_window" id="action_exit_employee">
+          <field name="name">Request Exit</field>
+          <field name="res_model">hr.exit</field>
+          <field name="view_type">form</field>
+          <field name='view_mode'>tree,form,calendar</field>
+          <field name="domain">[('employee_id.user_id', 'in', [uid])]</field>
+          <field name="context">{'user': 'user_id','cond': 'in','val': uid}</field>
+          <field name="view_id" ref="view_hr_exit_tree"/>
+
+      </record>
+
+      <record id="action_exit_direct" model="ir.actions.act_window">
+          <field name="name">D-Mgr Approval</field>
+          <field name="type">ir.actions.act_window</field>
+          <field name="res_model">hr.exit</field>
+          <field name="view_type">form</field>
+          <field name="view_mode">tree,form,calendar</field>
+          <field name="domain">[('employee_id.parent_id.user_id', 'in', [uid])]</field>
+          <field name="context">{'user': 'parent_id.user_id','cond': 'in','val': uid,'search_default_request':1}</field>
+          <field name="view_id" ref="view_hr_exit_tree"/>
+          <field name="search_view_id" ref="view_hr_exit_filter"/>
+      </record>
+
+      <record id="action_hr_exit_hr" model="ir.actions.act_window">
+          <field name="name">HR-Mgr Approval</field>
+          <field name="type">ir.actions.act_window</field>
+          <field name="res_model">hr.exit</field>
+          <field name="view_type">form</field>
+          <field name="view_mode">tree,form,calendar</field>
+          <field name="context">{'user': 'id','cond': 'not in','val': False,'search_default_confirm':1}</field>
+          <field name="view_id" ref="view_hr_exit_tree"/>
+          <field name="search_view_id" ref="view_hr_exit_filter"/>
+
+      </record>
+
+      <record id="action_hr_exit_admin" model="ir.actions.act_window">
+          <field name="name">Exit Reentry Admin</field>
+          <field name="type">ir.actions.act_window</field>
+          <field name="res_model">hr.exit</field>
+          <field name="view_type">form</field>
+          <field name="view_mode">tree,form,calendar</field>
+          <field name="context">{'user': 'id','cond': 'not in','val': False,'search_default_process':1}</field>
+          <field name="view_id" ref="view_hr_exit_tree"/>
+          <field name="search_view_id" ref="view_hr_exit_filter"/>
+
+      </record>
+
+      <menuitem parent="hr.menu_hr_root" id="exit_employee_menu" name="Exit Reentery" sequence="3" />
+
+      <menuitem id="hr_request_exit" name="Request Exit" action="action_exit_employee"
+            parent="exit_employee_menu" sequence="1"/>
+
+      <menuitem id="hr_exit_menu_direct" name="D-Mgr Approval" action="action_exit_direct"
+                parent="exit_employee_menu" sequence="2" groups="hr.group_hr_manager"/>
+
+      <menuitem id="hr_exit_menu_hr" name="HR-Mgr Approval" action="action_hr_exit_hr"
+                parent="exit_employee_menu" sequence="3" groups="hr.group_hr_manager"/>
+
+      <menuitem id="hr_exit_menu_admin" name="Exit Reentry Admin" action="action_hr_exit_admin"
+                parent="exit_employee_menu" sequence="4" groups="hr_exit_reenter.exit_entry_group"/>
+  </data>
+</odoo>

@@ -1,0 +1,30 @@
+<odoo>
+    <record id="exit_entry_group" model="res.groups">
+        <field name="name">Exit Reentry</field>
+        <field name="category_id" ref="base.module_category_usability"/>
+        <field name="implied_ids" eval="[(4, ref('base.group_user'))]"/>
+    </record>
+
+    <record id="employee_see_exit_reentry " model="ir.rule">
+        <field name="name">EMployee See His Exit Reentry</field>
+        <field name="model_id" ref="model_hr_exit"/>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="True"/>
+        <field name="perm_create" eval="True"/>
+        <field name="perm_unlink" eval="True"/>
+        <field name="groups" eval="[(4, ref('base.group_user'))]"/>
+        <field name="domain_force">[('employee_id.user_id','=',user.id)]</field>
+    </record>
+
+    <record id="manager_see_all_exits" model="ir.rule">
+        <field name="name">Manager See All</field>
+        <field name="model_id" ref="model_hr_exit"/>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="True"/>
+        <field name="perm_create" eval="True"/>
+        <field name="perm_unlink" eval="True"/>
+        <field name="groups" eval="[(4, ref('hr.group_hr_user')),(4, ref('hr.group_hr_manager'))]"/>
+        <field name="domain_force">[(1, '=', 1)]</field>
+    </record>
+
+</odoo>
