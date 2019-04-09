@@ -33,7 +33,7 @@ class hr_exit_reenter(models.Model):
         if (self.employee_id and self.employee_id.parent_id and self.employee_id.parent_id.user_id) and self.employee_id.parent_id.user_id.id == self.env.uid:
             self.current_user = True
 
-    employee_id = fields.Many2one('hr.employee', string='Employee', required=True, readonly=False,
+    employee_id = fields.Many2one('hr.employee', string='Employee', required=True, readonly=True,
                                   states=READONLY_STATES,default=_get_employee)
     exit_date_from = fields.Date(string='Exit Date From', required=True,readonly=False, copy=False,
                                  states=READONLY_STATES, )
@@ -65,7 +65,7 @@ class hr_exit_reenter(models.Model):
         ('draft', 'Draft'),
         ('request', 'Waiting for Confirm'),
         ('confirm', 'Waiting for Approval'),
-        ('approve', 'Approved'),
+        ('approve', 'In Process'),
         ('refuse', 'Refused'),
         ('process', 'Processing'),
         ('done', 'Done'),
